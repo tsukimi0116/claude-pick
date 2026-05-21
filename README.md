@@ -43,7 +43,15 @@ source ~/.zshrc   # 或 ~/.bashrc
 
 ## 設定
 
-編輯 `~/.config/claude-pick/config`：
+用你習慣的編輯器打開設定檔：
+
+```bash
+code ~/.config/claude-pick/config   # VS Code
+nano ~/.config/claude-pick/config   # nano（Ctrl-O 存、Ctrl-X 離開）
+open -e ~/.config/claude-pick/config # macOS 文字編輯器
+```
+
+預設內容：
 
 ```sh
 # 你的專案根目錄
@@ -55,6 +63,30 @@ CLAUDE_PICK_NESTED="config"
 ```
 
 每個設定值也可用同名環境變數覆寫（環境變數優先於設定檔）。
+
+**改完馬上生效**，不用 `source ~/.zshrc` 也不用重開終端機 — 每次跑 `cdc` / `cdo` 都會重新讀設定檔。
+
+### 範例
+
+換到不同的專案根目錄：
+
+```sh
+CLAUDE_PICK_ROOT="$HOME/work/projects"
+```
+
+多個需要下鑽的資料夾（逗號分隔，不要加空白）：
+
+```sh
+CLAUDE_PICK_NESTED="config,clients,sites"
+```
+
+→ 之後選到 `config`、`clients`、或 `sites` 都會跳第二層。
+
+只想暫時用別的根目錄試試（不改設定檔）：
+
+```bash
+CLAUDE_PICK_ROOT="$HOME/personal" cdc
+```
 
 ### 改指令名稱
 
@@ -146,7 +178,15 @@ The shell function (rather than a plain script) is what lets `cd` persist in you
 
 ## Configuration
 
-Edit `~/.config/claude-pick/config`:
+Open the config file in your editor of choice:
+
+```bash
+code ~/.config/claude-pick/config    # VS Code
+nano ~/.config/claude-pick/config    # nano (Ctrl-O to save, Ctrl-X to exit)
+open -e ~/.config/claude-pick/config # macOS TextEdit
+```
+
+Default contents:
 
 ```sh
 # Path containing your project folders
@@ -158,6 +198,30 @@ CLAUDE_PICK_NESTED="config"
 ```
 
 Every value can also be overridden by an environment variable of the same name (env takes precedence over config).
+
+**Changes apply immediately** — no need to `source ~/.zshrc` or restart your terminal. `cdc` / `cdo` reads the config on every run.
+
+### Examples
+
+Point to a different projects folder:
+
+```sh
+CLAUDE_PICK_ROOT="$HOME/work/projects"
+```
+
+Drill into multiple folders (comma-separated, no spaces):
+
+```sh
+CLAUDE_PICK_NESTED="config,clients,sites"
+```
+
+→ Picking `config`, `clients`, or `sites` from the first list opens a second list of their sub-folders.
+
+Try a different root once without editing the config:
+
+```bash
+CLAUDE_PICK_ROOT="$HOME/personal" cdc
+```
 
 ### Change the command name
 
