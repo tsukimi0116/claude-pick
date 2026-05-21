@@ -89,7 +89,7 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 需要防睡眠 + 跳過權限提示時，直接加 flag：
 
 ```bash
-cdc -d        # 或 cdc -dan
+cdc -dan      # 或 cdc --danger
 ```
 
 → 等同於 `caffeinate -ims claude --dangerously-skip-permissions`，不用改設定檔。
@@ -120,10 +120,37 @@ CLAUDE_PICK_ROOT="$HOME/personal" cdc
 | 指令 | 行為 |
 |---|---|
 | `cdc`  | 當前 shell `cd` 到所選專案 → 若有 `.nvmrc` 跑 `nvm use` → 啟動 `claude` |
-| `cdc -d` 或 `cdc -dan` | 同上，但用 `caffeinate -ims claude --dangerously-skip-permissions` 啟動（防睡眠 + 跳過權限提示） |
+| `cdc -dan` 或 `cdc --danger` | 同上，但用 `caffeinate -ims claude --dangerously-skip-permissions` 啟動（防睡眠 + 跳過權限提示） |
 | `cdo`  | 當前 shell `cd` 到所選專案（不跑 nvm、不啟動 claude） |
 
 選單操作：直接打字即可 fuzzy filter，`↑↓` 移動、`Enter` 確認、`Esc` 取消。被列入 `CLAUDE_PICK_NESTED` 的資料夾選到時會跳出第二層選單。
+
+### 透傳 claude 啟動參數
+
+除了 `-dan` / `--danger` 是 cdc 自己消化掉的（轉成 caffeinate + danger 組合），其他所有參數都會直接透傳給 `claude`。所以這些都可以打：
+
+```bash
+cdc -c                      # 接續這個專案最近的一次對話
+cdc -r                      # 開啟 session picker 挑要 resume 的對話
+cdc --model opus            # 換模型啟動
+cdc --effort high           # 切 effort level (low/medium/high/xhigh/max)
+cdc -n "OFC-11024 hotfix"   # 給這個 session 一個顯示名稱
+cdc --ide                   # 自動連到 IDE（VS Code/JetBrains）
+cdc --bare                  # 最簡模式，不載入 hooks/plugins/CLAUDE.md
+cdc -w feature-x            # 在新 git worktree 上開
+cdc --from-pr 3382          # 用 PR 編號 resume 對應的 session
+cdc -p "summarize this dir" # 一次性 print 模式（不進入互動）
+```
+
+可以跟 `-dan` 混用，例如：
+
+```bash
+cdc -dan -c --model opus    # 危險模式 + 接續對話 + opus
+```
+
+完整 flag 清單請看 `claude --help`。
+
+> ⚠️ 衝突提醒：claude 自己的 `-d` 是 `--debug` 縮寫，所以 cdc 的「危險模式」不用 `-d`，請用 `-dan` / `--danger` / `--dangerous`。`cdc -d` 會被當成 `claude -d`（debug 模式）透傳。
 
 ## 解除安裝
 
@@ -243,7 +270,7 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 Need sleep-prevention + skip-permissions? Just pass the flag:
 
 ```bash
-cdc -d        # or cdc -dan
+cdc -dan      # or cdc --danger
 ```
 
 → Equivalent to `caffeinate -ims claude --dangerously-skip-permissions`. No config edit required.
@@ -274,10 +301,37 @@ Two commands are installed; both share the same picker:
 | Command | What it does |
 |---|---|
 | `cdc`  | `cd` into the picked project in the current shell, run `nvm use` if `.nvmrc` exists, then launch `claude` |
-| `cdc -d` or `cdc -dan` | Same as above, but launches with `caffeinate -ims claude --dangerously-skip-permissions` (prevents sleep + skips permission prompts) |
+| `cdc -dan` or `cdc --danger` | Same as above, but launches with `caffeinate -ims claude --dangerously-skip-permissions` (prevents sleep + skips permission prompts) |
 | `cdo`  | `cd` into the picked project in the current shell — no `nvm`, no `claude` |
 
 In both, you can type to fuzzy-filter, `↑↓` to move, `Enter` to confirm, `Esc` to cancel. Folders listed in `CLAUDE_PICK_NESTED` open a second picker for their sub-folders.
+
+### Forwarding flags to claude
+
+Anything that isn't `-dan` / `--danger` is passed straight through to `claude`. Examples:
+
+```bash
+cdc -c                      # continue most recent conversation in this dir
+cdc -r                      # open session picker to resume
+cdc --model opus            # switch model
+cdc --effort high           # effort level (low/medium/high/xhigh/max)
+cdc -n "OFC-11024 hotfix"   # name the session
+cdc --ide                   # auto-connect to IDE (VS Code/JetBrains)
+cdc --bare                  # minimal mode — no hooks/plugins/CLAUDE.md
+cdc -w feature-x            # spin up a new git worktree
+cdc --from-pr 3382          # resume the session linked to a PR
+cdc -p "summarize this dir" # one-shot print mode (non-interactive)
+```
+
+Combine freely with `-dan`:
+
+```bash
+cdc -dan -c --model opus    # danger mode + continue + opus
+```
+
+See `claude --help` for the full flag list.
+
+> ⚠️ Note: claude's `-d` is short for `--debug`. That's why this picker uses `-dan` / `--danger` / `--dangerous` (not `-d`) for its danger-mode shortcut — `cdc -d` is forwarded as `claude -d` (debug).
 
 ## Uninstall
 

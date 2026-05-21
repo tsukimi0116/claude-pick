@@ -83,9 +83,12 @@ $SENTINEL
 export PATH="\$HOME/.local/bin:\$PATH"
 $CMD_NAME() {
     local target danger=0
+    local -a args
+    args=()
     while [ \$# -gt 0 ]; do
         case "\$1" in
-            -d|-dan|--danger|--dangerous) danger=1 ;;
+            -dan|--danger|--dangerous) danger=1 ;;
+            *) args+=("\$1") ;;
         esac
         shift
     done
@@ -96,10 +99,20 @@ $CMD_NAME() {
         nvm use >/dev/null
     fi
     if [ "\$danger" -eq 1 ]; then
-        caffeinate -ims claude --dangerously-skip-permissions
+        caffeinate -ims claude --dangerously-skip-permissions "\${args[@]}"
     else
         [ -f "\$HOME/.config/claude-pick/config" ] && source "\$HOME/.config/claude-pick/config"
-        eval "\${CLAUDE_PICK_LAUNCH:-claude}"
+        local base="\${CLAUDE_PICK_LAUNCH:-claude}"
+        if [ \${#args[@]} -gt 0 ]; then
+            local args_quoted=""
+            local a
+            for a in "\${args[@]}"; do
+                args_quoted+=" \$(printf '%q' "\$a")"
+            done
+            eval "\$base\$args_quoted"
+        else
+            eval "\$base"
+        fi
     fi
 }
 ${CMD_NAME}o() {
