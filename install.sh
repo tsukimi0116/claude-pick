@@ -2,7 +2,7 @@
 # claude-pick installer
 # Usage:
 #   Local:  ./install.sh
-#   Remote: curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/install.sh | bash
+#   Remote: curl -fsSL https://raw.githubusercontent.com/tsukimi0116/claude-pick/main/install.sh | bash
 
 set -euo pipefail
 
@@ -12,8 +12,7 @@ SCRIPT_NAME="claude-pick.sh"
 TARGET_SCRIPT="$BIN_DIR/$SCRIPT_NAME"
 CMD_NAME="${CLAUDE_PICK_CMD:-cdc}"
 
-# Replace USER/REPO with the actual GitHub path once the repo is published.
-REMOTE_URL="${CLAUDE_PICK_REMOTE:-https://raw.githubusercontent.com/USER/REPO/main/$SCRIPT_NAME}"
+REMOTE_URL="${CLAUDE_PICK_REMOTE:-https://raw.githubusercontent.com/tsukimi0116/claude-pick/main/$SCRIPT_NAME}"
 
 SENTINEL="# >>> claude-pick >>>"
 SENTINEL_END="# <<< claude-pick <<<"

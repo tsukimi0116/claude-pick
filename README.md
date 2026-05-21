@@ -13,17 +13,17 @@ Optional second-level drill-down for "folders of folders" (e.g. a `config/` dire
 
 ## Install
 
-One-liner (replace `USER/REPO` with the actual GitHub path once published):
+One-liner:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tsukimi0116/claude-pick/main/install.sh | bash
 ```
 
 Or clone and run:
 
 ```bash
-git clone https://github.com/USER/REPO.git
-cd REPO
+git clone https://github.com/tsukimi0116/claude-pick.git
+cd claude-pick
 ./install.sh
 ```
 
