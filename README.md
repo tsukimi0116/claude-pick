@@ -61,9 +61,9 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # 從第一層選到這些名稱時，會跳出第二層選單
 CLAUDE_PICK_NESTED="config"
 
-# `cdc` 在 cd 完成後實際執行的指令，預設就是 `claude`。
-# 想加 flag 或包 caffeinate 防止睡眠時改這裡，不用動 .zshrc。
-# CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+# 平常 `cdc`（無 flag）執行的指令，預設就是 `claude`。
+# `cdc -d` / `cdc -dan` 一律跑寫死的 caffeinate + danger 組合，不受此設定影響。
+# CLAUDE_PICK_LAUNCH="claude"
 ```
 
 每個設定值也可用同名環境變數覆寫（環境變數優先於設定檔）。
@@ -86,13 +86,19 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 
 → 之後選到 `config`、`clients`、或 `sites` 都會跳第二層。
 
-把 `cdc` 改成「防睡眠 + 跳過權限提示」版本：
+需要防睡眠 + 跳過權限提示時，直接加 flag：
 
-```sh
-CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+```bash
+cdc -d        # 或 cdc -dan
 ```
 
-→ 之後打 `cdc` 就等同於 `caffeinate -ims claude --dangerously-skip-permissions`。
+→ 等同於 `caffeinate -ims claude --dangerously-skip-permissions`，不用改設定檔。
+
+如果想讓**所有**無 flag 的 `cdc` 都換成自訂啟動指令（例如永遠帶 caffeinate）：
+
+```sh
+CLAUDE_PICK_LAUNCH="caffeinate -ims claude"
+```
 
 只想暫時用別的根目錄試試（不改設定檔）：
 
@@ -114,6 +120,7 @@ CLAUDE_PICK_ROOT="$HOME/personal" cdc
 | 指令 | 行為 |
 |---|---|
 | `cdc`  | 當前 shell `cd` 到所選專案 → 若有 `.nvmrc` 跑 `nvm use` → 啟動 `claude` |
+| `cdc -d` 或 `cdc -dan` | 同上，但用 `caffeinate -ims claude --dangerously-skip-permissions` 啟動（防睡眠 + 跳過權限提示） |
 | `cdo`  | 當前 shell `cd` 到所選專案（不跑 nvm、不啟動 claude） |
 
 選單操作：直接打字即可 fuzzy filter，`↑↓` 移動、`Enter` 確認、`Esc` 取消。被列入 `CLAUDE_PICK_NESTED` 的資料夾選到時會跳出第二層選單。
@@ -208,9 +215,9 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # Picking one of these from the first list opens a second list.
 CLAUDE_PICK_NESTED="config"
 
-# Command run by `cdc` after cd-ing into the project. Defaults to `claude`.
-# Use this to add flags or wrap with caffeinate without touching .zshrc.
-# CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+# Command run by plain `cdc` (no flags). Defaults to `claude` if unset.
+# `cdc -d` / `cdc -dan` always runs the danger combo regardless of this value.
+# CLAUDE_PICK_LAUNCH="claude"
 ```
 
 Every value can also be overridden by an environment variable of the same name (env takes precedence over config).
@@ -233,13 +240,19 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 
 → Picking `config`, `clients`, or `sites` from the first list opens a second list of their sub-folders.
 
-Make `cdc` run claude with sleep-prevention and skip-permissions flags:
+Need sleep-prevention + skip-permissions? Just pass the flag:
 
-```sh
-CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+```bash
+cdc -d        # or cdc -dan
 ```
 
-→ Typing `cdc` is now equivalent to running the full command above.
+→ Equivalent to `caffeinate -ims claude --dangerously-skip-permissions`. No config edit required.
+
+To make **every** flag-less `cdc` use a custom launch command (e.g. always caffeinate):
+
+```sh
+CLAUDE_PICK_LAUNCH="caffeinate -ims claude"
+```
 
 Try a different root once without editing the config:
 
@@ -261,6 +274,7 @@ Two commands are installed; both share the same picker:
 | Command | What it does |
 |---|---|
 | `cdc`  | `cd` into the picked project in the current shell, run `nvm use` if `.nvmrc` exists, then launch `claude` |
+| `cdc -d` or `cdc -dan` | Same as above, but launches with `caffeinate -ims claude --dangerously-skip-permissions` (prevents sleep + skips permission prompts) |
 | `cdo`  | `cd` into the picked project in the current shell — no `nvm`, no `claude` |
 
 In both, you can type to fuzzy-filter, `↑↓` to move, `Enter` to confirm, `Esc` to cancel. Folders listed in `CLAUDE_PICK_NESTED` open a second picker for their sub-folders.

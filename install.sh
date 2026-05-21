@@ -64,9 +64,8 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # Picking one of these from the first list opens a second list.
 CLAUDE_PICK_NESTED="config"
 
-# Command run by `cdc` after cd-ing into the project. Defaults to plain `claude`.
-# Use this to add flags or wrap with caffeinate.
-# Example: CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+# Command run by plain `cdc` (no flags). Defaults to `claude` if unset.
+# `cdc -d` / `cdc -dan` always runs the danger combo regardless of this value.
 # CLAUDE_PICK_LAUNCH="claude"
 EOF
 }
@@ -83,15 +82,25 @@ write_shell_function() {
 $SENTINEL
 export PATH="\$HOME/.local/bin:\$PATH"
 $CMD_NAME() {
-    local target
+    local target danger=0
+    while [ \$# -gt 0 ]; do
+        case "\$1" in
+            -d|-dan|--danger|--dangerous) danger=1 ;;
+        esac
+        shift
+    done
     target=\$(claude-pick.sh) || return
     [ -z "\$target" ] && return
     cd "\$target" || return
     if [ -f .nvmrc ] && command -v nvm >/dev/null 2>&1; then
         nvm use >/dev/null
     fi
-    [ -f "\$HOME/.config/claude-pick/config" ] && source "\$HOME/.config/claude-pick/config"
-    eval "\${CLAUDE_PICK_LAUNCH:-claude}"
+    if [ "\$danger" -eq 1 ]; then
+        caffeinate -ims claude --dangerously-skip-permissions
+    else
+        [ -f "\$HOME/.config/claude-pick/config" ] && source "\$HOME/.config/claude-pick/config"
+        eval "\${CLAUDE_PICK_LAUNCH:-claude}"
+    fi
 }
 ${CMD_NAME}o() {
     local target
