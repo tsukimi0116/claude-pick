@@ -63,6 +63,11 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # Comma-separated folder names that should drill into sub-folders.
 # Picking one of these from the first list opens a second list.
 CLAUDE_PICK_NESTED="config"
+
+# Command run by `cdc` after cd-ing into the project. Defaults to plain `claude`.
+# Use this to add flags or wrap with caffeinate.
+# Example: CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+# CLAUDE_PICK_LAUNCH="claude"
 EOF
 }
 
@@ -85,7 +90,8 @@ $CMD_NAME() {
     if [ -f .nvmrc ] && command -v nvm >/dev/null 2>&1; then
         nvm use >/dev/null
     fi
-    claude
+    [ -f "\$HOME/.config/claude-pick/config" ] && source "\$HOME/.config/claude-pick/config"
+    eval "\${CLAUDE_PICK_LAUNCH:-claude}"
 }
 ${CMD_NAME}o() {
     local target

@@ -60,6 +60,10 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # 用逗號分隔的「需要下鑽到第二層」的資料夾名稱
 # 從第一層選到這些名稱時，會跳出第二層選單
 CLAUDE_PICK_NESTED="config"
+
+# `cdc` 在 cd 完成後實際執行的指令，預設就是 `claude`。
+# 想加 flag 或包 caffeinate 防止睡眠時改這裡，不用動 .zshrc。
+# CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
 ```
 
 每個設定值也可用同名環境變數覆寫（環境變數優先於設定檔）。
@@ -81,6 +85,14 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 ```
 
 → 之後選到 `config`、`clients`、或 `sites` 都會跳第二層。
+
+把 `cdc` 改成「防睡眠 + 跳過權限提示」版本：
+
+```sh
+CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+```
+
+→ 之後打 `cdc` 就等同於 `caffeinate -ims claude --dangerously-skip-permissions`。
 
 只想暫時用別的根目錄試試（不改設定檔）：
 
@@ -195,6 +207,10 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 # Comma-separated folder names that should drill into sub-folders.
 # Picking one of these from the first list opens a second list.
 CLAUDE_PICK_NESTED="config"
+
+# Command run by `cdc` after cd-ing into the project. Defaults to `claude`.
+# Use this to add flags or wrap with caffeinate without touching .zshrc.
+# CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
 ```
 
 Every value can also be overridden by an environment variable of the same name (env takes precedence over config).
@@ -216,6 +232,14 @@ CLAUDE_PICK_NESTED="config,clients,sites"
 ```
 
 → Picking `config`, `clients`, or `sites` from the first list opens a second list of their sub-folders.
+
+Make `cdc` run claude with sleep-prevention and skip-permissions flags:
+
+```sh
+CLAUDE_PICK_LAUNCH="caffeinate -ims claude --dangerously-skip-permissions"
+```
+
+→ Typing `cdc` is now equivalent to running the full command above.
 
 Try a different root once without editing the config:
 
