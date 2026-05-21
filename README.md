@@ -1,5 +1,7 @@
 # claude-pick
 
+[English](README.md) · [繁體中文](README.zh-TW.md)
+
 An interactive project picker for [Claude Code](https://claude.com/claude-code). Type one command, fuzzy-pick a project from your projects folder, and the script will `cd` into it and launch `claude` in your current shell.
 
 Optional second-level drill-down for "folders of folders" (e.g. a `config/` directory that holds per-site configs).
@@ -93,7 +95,7 @@ rm -rf ~/.config/claude-pick
 
 ## How it works
 
-`claude-pick.sh` prints the selected absolute path to stdout and nothing else. The shell function captures it with `$(...)` and runs `cd` + `claude` in your current shell. The picker UI (fzf or the macOS dialog) renders on the terminal/screen directly, not on stdout, so capture stays clean.
+`claude-pick.sh` prints the selected absolute path to stdout and nothing else. The shell function captures it with `$(...)` and runs `cd` + `claude` in your current shell. The `fzf` picker UI renders directly on the terminal, not on stdout, so the capture stays clean.
 
 ## License
 
