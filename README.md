@@ -154,21 +154,43 @@ cdc -dan -c --model opus    # 危險模式 + 接續對話 + opus
 
 ### 權限模式 cheatsheet
 
-`cdc -dan` 預設進的是 `bypassPermissions`（完全跳過權限檢查）。如果你想要「有審查的 yolo」或「鎖死 CI」之類的中間值，可以直接用 `--permission-mode` 透傳給 claude：
+每個模式都有 cdc 短 flag，不需要打 `--permission-mode <名稱>` 的長版：
 
 | 模式 | 不問就能做 | 適用場景 | cdc 寫法 |
 |---|---|---|---|
-| `default` | 只能讀 | 入門 / 敏感工作 | `cdc`（不加 flag） |
-| `acceptEdits` | 讀 + 編輯檔案 + 常見 fs 指令（mkdir/touch/mv/cp/rm/sed）| 邊改邊 review | `cdc --permission-mode acceptEdits` |
-| `plan` | 只能讀，強制先寫計畫不動 code | 探索 codebase | `cdc --permission-mode plan` |
-| `auto` 🆕 | 全部（背景分類器擋危險行為）| 長任務、要少提示但保留安全網 | `cdc --permission-mode auto` |
-| `dontAsk` | 只能跑預先允許清單裡的工具，其他直接拒絕 | CI / 鎖死腳本 | `cdc --permission-mode dontAsk` |
-| `bypassPermissions` | 全部，沒有任何檢查 | **只在沙箱 / 容器 / VM 用** | `cdc -dan` 或 `cdc --permission-mode bypassPermissions` |
+| `default` | 只能讀 | 入門 / 敏感工作 | `cdc` |
+| `acceptEdits` | 讀 + 編輯檔案 + 常見 fs 指令（mkdir/touch/mv/cp/rm/sed）| 邊改邊 review | `cdc -ae` |
+| `plan` | 只能讀，強制先寫計畫不動 code | 探索 codebase | `cdc -pl` |
+| `auto` 🆕 | 全部（背景分類器擋危險行為）| 長任務、要少提示但保留安全網 | `cdc -au` |
+| `dontAsk` | 只能跑預先允許清單裡的工具，其他直接拒絕 | CI / 鎖死腳本 | `cdc -na` |
+| `bypassPermissions` | 全部，沒有任何檢查 | **只在沙箱 / 容器 / VM 用** | `cdc -dan`（含 caffeinate 防睡眠）|
+
+每個短 flag 也都有對應的長 flag，給寫腳本時自我說明用：
+
+```
+-ae  ≡ --accept-edits
+-pl  ≡ --plan-mode
+-au  ≡ --auto-mode
+-na  ≡ --no-ask
+-dan ≡ --danger / --dangerous
+```
+
+如果你不確定要哪個模式，用 `cdc -m`（或 `--pick-mode`）會在資料夾選完後跳出**模式選單**讓你挑（fzf 一樣，方向鍵或打字 filter）：
+
+```bash
+cdc -m
+# 1. 先 fuzzy 選資料夾（既有行為）
+# 2. 再從 6 個模式 fuzzy 選一個
+# 3. Esc 第二層 = 用 default 啟動
+```
+
+也可以走標準的 `--permission-mode` 形式直接傳給 claude，例如 `cdc --permission-mode acceptEdits`，跟 `cdc -ae` 等價。
 
 **🆕 注意事項**：
 
 - `auto` 模式需要 **Claude Code v2.1.83+**，且帳號限 Max / Team / Enterprise / API（Pro 不支援），模型限 Sonnet 4.6 / Opus 4.6 / Opus 4.7
 - `bypassPermissions` 自 v2.1.126 起連寫入受保護路徑（`.git`、`.zshrc`、`.mcp.json` 等）也不會問，之前版本還是會問
+- `-dan` 跟 `cdc -m` 同時用時，**`-dan` 優先**（避免兩個模式互衝），mode picker 不會出現
 - 互動式切換：在 session 中按 `Shift+Tab` 循環 `default` → `acceptEdits` → `plan`
 - 單一 prompt 走 plan：在訊息開頭加 `/plan`
 - 把 `bypassPermissions` 加進 `Shift+Tab` 循環但不啟動：用 `--allow-dangerously-skip-permissions`（比 `--dangerously-skip-permissions` 克制）
@@ -358,21 +380,43 @@ See the official [CLI reference](https://code.claude.com/docs/en/cli-reference) 
 
 ### Permission modes cheatsheet
 
-`cdc -dan` defaults to `bypassPermissions` (no checks at all). For "supervised yolo" or "locked-down CI" in between, forward `--permission-mode` through to claude:
+Each mode has a short cdc flag so you don't have to type `--permission-mode <name>`:
 
 | Mode | Allowed without prompt | Best for | cdc form |
 |---|---|---|---|
-| `default` | Reads only | Onboarding / sensitive work | `cdc` (no flag) |
-| `acceptEdits` | Reads + file edits + common fs commands (mkdir/touch/mv/cp/rm/sed) | Iterating on code you're reviewing | `cdc --permission-mode acceptEdits` |
-| `plan` | Reads only; forces a written plan before edits | Codebase exploration | `cdc --permission-mode plan` |
-| `auto` 🆕 | Everything, with a background safety classifier | Long-running tasks with fewer prompts | `cdc --permission-mode auto` |
-| `dontAsk` | Only pre-approved tools; everything else denied | CI / locked-down scripts | `cdc --permission-mode dontAsk` |
-| `bypassPermissions` | Everything, no checks | **Sandboxes / containers / VMs only** | `cdc -dan` or `cdc --permission-mode bypassPermissions` |
+| `default` | Reads only | Onboarding / sensitive work | `cdc` |
+| `acceptEdits` | Reads + file edits + common fs commands (mkdir/touch/mv/cp/rm/sed) | Iterating on code you're reviewing | `cdc -ae` |
+| `plan` | Reads only; forces a written plan before edits | Codebase exploration | `cdc -pl` |
+| `auto` 🆕 | Everything, with a background safety classifier | Long-running tasks with fewer prompts | `cdc -au` |
+| `dontAsk` | Only pre-approved tools; everything else denied | CI / locked-down scripts | `cdc -na` |
+| `bypassPermissions` | Everything, no checks | **Sandboxes / containers / VMs only** | `cdc -dan` (also wraps with caffeinate) |
+
+Each short flag has a long counterpart for self-documenting scripts:
+
+```
+-ae  ≡ --accept-edits
+-pl  ≡ --plan-mode
+-au  ≡ --auto-mode
+-na  ≡ --no-ask
+-dan ≡ --danger / --dangerous
+```
+
+If you're not sure which mode you want, `cdc -m` (or `--pick-mode`) shows a **mode picker** after you choose the folder (same fzf style — arrows or fuzzy-filter):
+
+```bash
+cdc -m
+# 1. Pick a folder (the usual picker)
+# 2. Pick one of the 6 modes
+# 3. Esc on the second picker = use default
+```
+
+You can also forward the standard `--permission-mode` flag, e.g. `cdc --permission-mode acceptEdits` is equivalent to `cdc -ae`.
 
 **🆕 Notes:**
 
 - `auto` mode requires **Claude Code v2.1.83+**, a Max / Team / Enterprise / API plan (not Pro), and Sonnet 4.6 / Opus 4.6 / Opus 4.7
 - Since v2.1.126, `bypassPermissions` also auto-approves writes to protected paths (`.git`, `.zshrc`, `.mcp.json`, …); earlier versions still prompted
+- When `-dan` and `-m` are passed together, **`-dan` wins** and the mode picker is skipped (avoids two conflicting modes)
 - In-session toggle: `Shift+Tab` cycles `default` → `acceptEdits` → `plan`
 - One-shot plan mode: prefix your message with `/plan`
 - Add `bypassPermissions` to the `Shift+Tab` cycle without entering it: use `--allow-dangerously-skip-permissions` (more conservative than `--dangerously-skip-permissions`)

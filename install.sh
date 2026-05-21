@@ -82,18 +82,45 @@ write_shell_function() {
 $SENTINEL
 export PATH="\$HOME/.local/bin:\$PATH"
 $CMD_NAME() {
-    local target danger=0
+    local target danger=0 pick_mode=0
     local -a args
     args=()
     while [ \$# -gt 0 ]; do
         case "\$1" in
             -dan|--danger|--dangerous) danger=1 ;;
+            -ae|--accept-edits) args+=("--permission-mode" "acceptEdits") ;;
+            -pl|--plan-mode) args+=("--permission-mode" "plan") ;;
+            -au|--auto-mode) args+=("--permission-mode" "auto") ;;
+            -na|--no-ask) args+=("--permission-mode" "dontAsk") ;;
+            -m|--pick-mode) pick_mode=1 ;;
             *) args+=("\$1") ;;
         esac
         shift
     done
     target=\$(claude-pick.sh) || return
     [ -z "\$target" ] && return
+
+    if [ "\$pick_mode" -eq 1 ] && [ "\$danger" -ne 1 ]; then
+        local choice
+        choice=\$(printf '%s\n' \\
+            "default            reads only · safest" \\
+            "acceptEdits        reads + file edits + common fs commands" \\
+            "plan               reads only · forces a written plan first" \\
+            "auto               everything · safety classifier (v2.1.83+, Max/Team/Enterprise/API)" \\
+            "dontAsk            allowlist only · denies everything else (for CI)" \\
+            "bypassPermissions  no checks · sandboxes / containers / VMs only" | \\
+            fzf --prompt="Mode ❯ " --height=50% --reverse \\
+                --border=rounded --no-mouse --info=inline \\
+                --header="↑↓ to choose · enter to use · esc = default")
+        if [ -n "\$choice" ]; then
+            local mode
+            mode=\$(printf '%s' "\$choice" | awk '{print \$1}')
+            if [ -n "\$mode" ] && [ "\$mode" != "default" ]; then
+                args+=("--permission-mode" "\$mode")
+            fi
+        fi
+    fi
+
     cd "\$target" || return
     if [ -f .nvmrc ] && command -v nvm >/dev/null 2>&1; then
         nvm use >/dev/null
