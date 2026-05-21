@@ -130,16 +130,16 @@ CLAUDE_PICK_ROOT="$HOME/personal" cdc
 除了 `-dan` / `--danger` 是 cdc 自己消化掉的（轉成 caffeinate + danger 組合），其他所有參數都會直接透傳給 `claude`。所以這些都可以打：
 
 ```bash
-cdc -c                      # 接續這個專案最近的一次對話
-cdc -r                      # 開啟 session picker 挑要 resume 的對話
-cdc --model opus            # 換模型啟動
-cdc --effort high           # 切 effort level (low/medium/high/xhigh/max)
-cdc -n "OFC-11024 hotfix"   # 給這個 session 一個顯示名稱
-cdc --ide                   # 自動連到 IDE（VS Code/JetBrains）
-cdc --bare                  # 最簡模式，不載入 hooks/plugins/CLAUDE.md
-cdc -w feature-x            # 在新 git worktree 上開
-cdc --from-pr 3382          # 用 PR 編號 resume 對應的 session
-cdc -p "summarize this dir" # 一次性 print 模式（不進入互動）
+cdc -c                      # 接續這個目錄最近的對話（也含用 /add-dir 加進來的 session）
+cdc -r                      # 開 session picker；或 cdc -r <ID或名稱> 直接 resume；v2.1.144+ 背景 session 也會列出
+cdc --model opus            # 換模型（sonnet/opus 或完整名稱）；覆蓋 settings 與 ANTHROPIC_MODEL
+cdc --effort high           # effort level (low/medium/high/xhigh/max)；等級隨模型而定；僅本 session 有效不會 persist
+cdc -n "OFC-11024 hotfix"   # 命名 session，會顯示在 /resume picker 與終端機 title；可用 cdc -r <名稱> resume
+cdc --ide                   # 啟動時若剛好偵測到一個 IDE 就自動連
+cdc --bare                  # 最簡模式：跳過 hooks/skills/plugins/MCP/auto-memory/CLAUDE.md 自動發現，主要給腳本用
+cdc -w feature-x            # 在 <repo>/.claude/worktrees/<name> 開隔離 worktree；也可吃 #<PR編號> 或 PR URL 來 fetch
+cdc --from-pr 3382          # Resume 綁定該 PR 的 session；可吃 PR 編號或 GitHub/GH-Enterprise/GitLab/Bitbucket URL
+cdc -p "summarize this dir" # Print 模式（非互動），輸出後退出
 ```
 
 可以跟 `-dan` 混用，例如：
@@ -148,7 +148,7 @@ cdc -p "summarize this dir" # 一次性 print 模式（不進入互動）
 cdc -dan -c --model opus    # 危險模式 + 接續對話 + opus
 ```
 
-完整 flag 清單請看 `claude --help`。
+完整 flag 清單看官方 [CLI reference](https://code.claude.com/docs/zh-TW/cli-reference)（**`claude --help` 並不會列出全部 flag**，官方文件才是準的）。
 
 > ⚠️ 衝突提醒：claude 自己的 `-d` 是 `--debug` 縮寫，所以 cdc 的「危險模式」不用 `-d`，請用 `-dan` / `--danger` / `--dangerous`。`cdc -d` 會被當成 `claude -d`（debug 模式）透傳。
 
@@ -334,16 +334,16 @@ In both, you can type to fuzzy-filter, `↑↓` to move, `Enter` to confirm, `Es
 Anything that isn't `-dan` / `--danger` is passed straight through to `claude`. Examples:
 
 ```bash
-cdc -c                      # continue most recent conversation in this dir
-cdc -r                      # open session picker to resume
-cdc --model opus            # switch model
-cdc --effort high           # effort level (low/medium/high/xhigh/max)
-cdc -n "OFC-11024 hotfix"   # name the session
-cdc --ide                   # auto-connect to IDE (VS Code/JetBrains)
-cdc --bare                  # minimal mode — no hooks/plugins/CLAUDE.md
-cdc -w feature-x            # spin up a new git worktree
-cdc --from-pr 3382          # resume the session linked to a PR
-cdc -p "summarize this dir" # one-shot print mode (non-interactive)
+cdc -c                      # Most recent conversation in this dir (also sessions added via /add-dir)
+cdc -r                      # Session picker; or cdc -r <id-or-name> to resume directly; bg sessions appear since v2.1.144
+cdc --model opus            # Switch model (sonnet/opus or full name); overrides settings & ANTHROPIC_MODEL
+cdc --effort high           # Effort level (low/medium/high/xhigh/max); available levels depend on model; not persisted
+cdc -n "OFC-11024 hotfix"   # Name the session (shown in /resume picker + terminal title); resumable via cdc -r <name>
+cdc --ide                   # Auto-connect at startup if exactly one IDE is detected
+cdc --bare                  # Minimal mode: skips hooks/skills/plugins/MCP/auto-memory/CLAUDE.md discovery; mainly for scripts
+cdc -w feature-x            # Isolated worktree at <repo>/.claude/worktrees/<name>; accepts #<PR#> or PR URL to fetch
+cdc --from-pr 3382          # Resume the session linked to a PR; accepts number or GH/GH-Enterprise/GitLab/Bitbucket URL
+cdc -p "summarize this dir" # Print mode (non-interactive)
 ```
 
 Combine freely with `-dan`:
@@ -352,7 +352,7 @@ Combine freely with `-dan`:
 cdc -dan -c --model opus    # danger mode + continue + opus
 ```
 
-See `claude --help` for the full flag list.
+See the official [CLI reference](https://code.claude.com/docs/en/cli-reference) for the full flag list (**`claude --help` does not list every flag** — the docs are the source of truth).
 
 > ⚠️ Note: claude's `-d` is short for `--debug`. That's why this picker uses `-dan` / `--danger` / `--dangerous` (not `-d`) for its danger-mode shortcut — `cdc -d` is forwarded as `claude -d` (debug).
 
