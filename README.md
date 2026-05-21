@@ -62,7 +62,7 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 CLAUDE_PICK_NESTED="config"
 
 # 平常 `cdc`（無 flag）執行的指令，預設就是 `claude`。
-# `cdc -d` / `cdc -dan` 一律跑寫死的 caffeinate + danger 組合，不受此設定影響。
+# `cdc -dan` / `cdc --danger` 一律跑寫死的 caffeinate + danger 組合，不受此設定影響。
 # CLAUDE_PICK_LAUNCH="claude"
 ```
 
@@ -120,7 +120,7 @@ CLAUDE_PICK_ROOT="$HOME/personal" cdc
 | 指令 | 行為 |
 |---|---|
 | `cdc`  | 當前 shell `cd` 到所選專案 → 若有 `.nvmrc` 跑 `nvm use` → 啟動 `claude` |
-| `cdc -dan` 或 `cdc --danger` | 同上，但用 `caffeinate -ims claude --dangerously-skip-permissions` 啟動（防睡眠 + 跳過權限提示） |
+| `cdc -dan` 或 `cdc --danger` | 同上，但啟動指令為 `caffeinate -ims claude --dangerously-skip-permissions`（防睡眠 + 進入 `bypassPermissions` 權限模式 — 詳見下方權限模式對照表） |
 | `cdo`  | 當前 shell `cd` 到所選專案（不跑 nvm、不啟動 claude） |
 
 選單操作：直接打字即可 fuzzy filter，`↑↓` 移動、`Enter` 確認、`Esc` 取消。被列入 `CLAUDE_PICK_NESTED` 的資料夾選到時會跳出第二層選單。
@@ -151,6 +151,29 @@ cdc -dan -c --model opus    # 危險模式 + 接續對話 + opus
 完整 flag 清單請看 `claude --help`。
 
 > ⚠️ 衝突提醒：claude 自己的 `-d` 是 `--debug` 縮寫，所以 cdc 的「危險模式」不用 `-d`，請用 `-dan` / `--danger` / `--dangerous`。`cdc -d` 會被當成 `claude -d`（debug 模式）透傳。
+
+### 權限模式 cheatsheet
+
+`cdc -dan` 預設進的是 `bypassPermissions`（完全跳過權限檢查）。如果你想要「有審查的 yolo」或「鎖死 CI」之類的中間值，可以直接用 `--permission-mode` 透傳給 claude：
+
+| 模式 | 不問就能做 | 適用場景 | cdc 寫法 |
+|---|---|---|---|
+| `default` | 只能讀 | 入門 / 敏感工作 | `cdc`（不加 flag） |
+| `acceptEdits` | 讀 + 編輯檔案 + 常見 fs 指令（mkdir/touch/mv/cp/rm/sed）| 邊改邊 review | `cdc --permission-mode acceptEdits` |
+| `plan` | 只能讀，強制先寫計畫不動 code | 探索 codebase | `cdc --permission-mode plan` |
+| `auto` 🆕 | 全部（背景分類器擋危險行為）| 長任務、要少提示但保留安全網 | `cdc --permission-mode auto` |
+| `dontAsk` | 只能跑預先允許清單裡的工具，其他直接拒絕 | CI / 鎖死腳本 | `cdc --permission-mode dontAsk` |
+| `bypassPermissions` | 全部，沒有任何檢查 | **只在沙箱 / 容器 / VM 用** | `cdc -dan` 或 `cdc --permission-mode bypassPermissions` |
+
+**🆕 注意事項**：
+
+- `auto` 模式需要 **Claude Code v2.1.83+**，且帳號限 Max / Team / Enterprise / API（Pro 不支援），模型限 Sonnet 4.6 / Opus 4.6 / Opus 4.7
+- `bypassPermissions` 自 v2.1.126 起連寫入受保護路徑（`.git`、`.zshrc`、`.mcp.json` 等）也不會問，之前版本還是會問
+- 互動式切換：在 session 中按 `Shift+Tab` 循環 `default` → `acceptEdits` → `plan`
+- 單一 prompt 走 plan：在訊息開頭加 `/plan`
+- 把 `bypassPermissions` 加進 `Shift+Tab` 循環但不啟動：用 `--allow-dangerously-skip-permissions`（比 `--dangerously-skip-permissions` 克制）
+
+完整說明：https://code.claude.com/docs/zh-TW/permission-modes
 
 ## 解除安裝
 
@@ -243,7 +266,7 @@ CLAUDE_PICK_ROOT="$HOME/Desktop/97"
 CLAUDE_PICK_NESTED="config"
 
 # Command run by plain `cdc` (no flags). Defaults to `claude` if unset.
-# `cdc -d` / `cdc -dan` always runs the danger combo regardless of this value.
+# `cdc -dan` / `cdc --danger` always runs the danger combo regardless of this value.
 # CLAUDE_PICK_LAUNCH="claude"
 ```
 
@@ -301,7 +324,7 @@ Two commands are installed; both share the same picker:
 | Command | What it does |
 |---|---|
 | `cdc`  | `cd` into the picked project in the current shell, run `nvm use` if `.nvmrc` exists, then launch `claude` |
-| `cdc -dan` or `cdc --danger` | Same as above, but launches with `caffeinate -ims claude --dangerously-skip-permissions` (prevents sleep + skips permission prompts) |
+| `cdc -dan` or `cdc --danger` | Same as above, but launches with `caffeinate -ims claude --dangerously-skip-permissions` (prevents sleep + enters `bypassPermissions` mode — see the permission-modes cheatsheet below) |
 | `cdo`  | `cd` into the picked project in the current shell — no `nvm`, no `claude` |
 
 In both, you can type to fuzzy-filter, `↑↓` to move, `Enter` to confirm, `Esc` to cancel. Folders listed in `CLAUDE_PICK_NESTED` open a second picker for their sub-folders.
@@ -332,6 +355,29 @@ cdc -dan -c --model opus    # danger mode + continue + opus
 See `claude --help` for the full flag list.
 
 > ⚠️ Note: claude's `-d` is short for `--debug`. That's why this picker uses `-dan` / `--danger` / `--dangerous` (not `-d`) for its danger-mode shortcut — `cdc -d` is forwarded as `claude -d` (debug).
+
+### Permission modes cheatsheet
+
+`cdc -dan` defaults to `bypassPermissions` (no checks at all). For "supervised yolo" or "locked-down CI" in between, forward `--permission-mode` through to claude:
+
+| Mode | Allowed without prompt | Best for | cdc form |
+|---|---|---|---|
+| `default` | Reads only | Onboarding / sensitive work | `cdc` (no flag) |
+| `acceptEdits` | Reads + file edits + common fs commands (mkdir/touch/mv/cp/rm/sed) | Iterating on code you're reviewing | `cdc --permission-mode acceptEdits` |
+| `plan` | Reads only; forces a written plan before edits | Codebase exploration | `cdc --permission-mode plan` |
+| `auto` 🆕 | Everything, with a background safety classifier | Long-running tasks with fewer prompts | `cdc --permission-mode auto` |
+| `dontAsk` | Only pre-approved tools; everything else denied | CI / locked-down scripts | `cdc --permission-mode dontAsk` |
+| `bypassPermissions` | Everything, no checks | **Sandboxes / containers / VMs only** | `cdc -dan` or `cdc --permission-mode bypassPermissions` |
+
+**🆕 Notes:**
+
+- `auto` mode requires **Claude Code v2.1.83+**, a Max / Team / Enterprise / API plan (not Pro), and Sonnet 4.6 / Opus 4.6 / Opus 4.7
+- Since v2.1.126, `bypassPermissions` also auto-approves writes to protected paths (`.git`, `.zshrc`, `.mcp.json`, …); earlier versions still prompted
+- In-session toggle: `Shift+Tab` cycles `default` → `acceptEdits` → `plan`
+- One-shot plan mode: prefix your message with `/plan`
+- Add `bypassPermissions` to the `Shift+Tab` cycle without entering it: use `--allow-dangerously-skip-permissions` (more conservative than `--dangerously-skip-permissions`)
+
+Full docs: https://code.claude.com/docs/permission-modes
 
 ## Uninstall
 
